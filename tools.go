@@ -187,7 +187,12 @@ func UintToBytesBigEndian(n uint32, nSize int) []byte {
 	}
 	return bytesBuffer.Bytes()
 }
+func Int32ToBytesBigEndian(n int32) []byte {
 
+	bytesBuffer := bytes.NewBuffer([]byte{})
+	binary.Write(bytesBuffer, binary.BigEndian, n)
+	return bytesBuffer.Bytes()
+}
 func Bar(percentage int, w int) {
 	str1 := "[" + strconv.Itoa(percentage) + "%]["
 	str2 := "="
