@@ -61,10 +61,10 @@ func (p *SChan) Write(v interface{}) error {
 	p.mu.Lock() //同一时刻只允许一个协程进行写操作
 	defer p.mu.Unlock()
 	if p.nl == p.s { //
-		return fmt.Errorf("SChan is full ! Is not be write . your content:[%v]\nLast write desc:%v", v, p.desc)
+		return fmt.Errorf("SChan is full ! Last write desc : %v", v, p.desc)
 	}
 	if p.isClose {
-		return fmt.Errorf("SChan is closed ! Is not be write . your content:[%v]\nLast write desc:%v", v, p.desc)
+		return fmt.Errorf("SChan is closed ! Last write desc : %v", v, p.desc)
 	}
 	p.tc <- v
 	atomic.AddInt32(&p.nl, 1) //缓冲区数量加1  原子操作+1
