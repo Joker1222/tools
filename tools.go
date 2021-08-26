@@ -376,3 +376,7 @@ func PrintCallerName() string {
 	pc, _, _, _ := runtime.Caller(2)
 	return runtime.FuncForPC(pc).Name()
 }
+func PrintCustomCallerName(skip int) string {
+	pc, _, _, _ := runtime.Caller(skip)
+	return runtime.FuncForPC(pc).Name()
+}
