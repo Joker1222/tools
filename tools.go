@@ -366,3 +366,13 @@ func (p ProtoNil) Reset() {
 func (p ProtoNil) ProtoMessage() {
 
 }
+
+
+func PrintSelfFuncName() string {
+	pc, _, _, _ := runtime.Caller(1)
+	return runtime.FuncForPC(pc).Name()
+}
+func PrintCallerName() string {
+	pc, _, _, _ := runtime.Caller(2)
+	return runtime.FuncForPC(pc).Name()
+}
