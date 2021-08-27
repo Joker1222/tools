@@ -5,10 +5,10 @@ import (
 	"crypto"
 	"crypto/aes"
 	"crypto/cipher"
+	crand "crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
-	crand "crypto/rand"
 	"encoding/binary"
 	"encoding/csv"
 	"encoding/gob"
@@ -145,6 +145,7 @@ func PathExists(path string) (bool, error) {
 //======================================================随机数
 /*随机生成一个int64，不包括max!*/
 func RandInt64(min, max int64) int64 {
+	rand.Seed(time.Now().UnixNano())
 	if min >= max || min == 0 || max == 0 {
 		return max
 	}
@@ -152,6 +153,7 @@ func RandInt64(min, max int64) int64 {
 }
 /*随机生成一个int，不包括Max*/
 func RandInt(min, max int) int {
+	rand.Seed(time.Now().UnixNano())
 	if min >= max || min == 0 || max == 0 {
 		return max
 	}
