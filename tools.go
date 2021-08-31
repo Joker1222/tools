@@ -6,6 +6,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	crand "crypto/rand"
+	"crypto/rc4"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
@@ -30,6 +31,16 @@ import (
 )
 
 //======================================================文件操作
+/*load csv*/
+func LoadCsv(filepath string) [][]string{
+	cntb, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return nil
+	}
+	r2 := csv.NewReader(strings.NewReader(string(cntb)))
+	ss, _ := r2.ReadAll()
+	return ss
+}
 /*
 @Desc:加载json配置
 @Param:文件路径，json结构体指针(地址)
@@ -535,4 +546,23 @@ func RsaDecrypt(ciphertext, keyBytes []byte) []byte {
 		panic(err)
 	}
 	return data
+}
+
+/*rc4*/
+func Rc4Encrypt(key,input,output []byte) error{
+	c, err := rc4.NewCipher(key)
+	if err!=nil{
+		return err
+	}
+	c.XORKeyStream(output, input)
+	return nil
+}
+
+func Rc4Decrypt(key,input,output []byte)error{
+	c, err := rc4.NewCipher(key) // 切记：这里不能重用cipher1，必须重新生成新的
+	if err!=nil{
+		return err
+	}
+	c.XORKeyStream(output, input)
+	return nil
 }
