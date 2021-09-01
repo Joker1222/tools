@@ -325,8 +325,8 @@ func Bar(percentage int, w int) {
 }
 /*返回调用函数名称*/
 func CallFuncName(skip int) string {
-	pc, path, line, _ := runtime.Caller(skip)
-	return "\n[Call:" + runtime.FuncForPC(pc).Name() + "]\n[Path:" + path + "]\n[line:" + strconv.Itoa(line) + "]"
+	pc, _, _, _ := runtime.Caller(skip)
+	return runtime.FuncForPC(pc).Name()
 }
 /*指针内存深拷贝*/
 func DeepCopy(dst, src interface{}) error {
