@@ -17,6 +17,7 @@ import (
 	"encoding/pem"
 	"encoding/xml"
 	"errors"
+	"gopkg.in/yaml.v2"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -32,6 +33,13 @@ import (
 )
 
 //======================================================文件操作
+func LoadYamlConfig(filepath string,YamlConfig interface{}) error{
+	f,err:=ioutil.ReadFile(filepath)
+	if err!=nil{
+		return err
+	}
+	return yaml.Unmarshal(f,YamlConfig)
+}
 /*load csv*/
 func LoadCsv(filepath string) [][]string{
 	cntb, err := ioutil.ReadFile(filepath)
