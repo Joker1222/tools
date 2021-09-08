@@ -1,4 +1,4 @@
-module tools
+module github.com/joker1222/tools
 
 go 1.16
 
