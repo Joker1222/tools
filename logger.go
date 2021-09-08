@@ -176,8 +176,12 @@ func WithMaxSize(i int) logOpt{
 		log.maxSize = i
 	}
 }
-var  _NOW_TIME = time.Now().Format("2006_0102_1504_05")
-const _LOG_PATH = "log"
+func WithLogPath(path string) logOpt{
+	return func(log *ArdbegLog) {
+		log.logPath = path
+	}
+}
+
 func NewLogger(caseName string,opt... logOpt)(*ArdbegLog,error){
 	l:=new(ArdbegLog)
 	l.maxSize = 512
@@ -186,7 +190,10 @@ func NewLogger(caseName string,opt... logOpt)(*ArdbegLog,error){
 	for _,o:=range opt{
 		o(l)
 	}
-	l.logPath =_LOG_PATH+"/"+_NOW_TIME+"_"+caseName
+	if l.logPath == ""{
+		l.logPath = "./log"
+	}
+	l.logPath =l.logPath+"/"+time.Now().Format("2006_0102_1504_05")+"_"+caseName
 	if err:=os.MkdirAll(l.logPath, os.ModePerm);err!=nil{
 		return nil,fmt.Errorf("create dir %v failed ...",l.logPath)
 	}
