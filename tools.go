@@ -2,6 +2,7 @@ package tools
 
 import (
 	"bytes"
+	"compress/zlib"
 	"crypto"
 	"crypto/aes"
 	"crypto/cipher"
@@ -17,8 +18,8 @@ import (
 	"encoding/pem"
 	"encoding/xml"
 	"errors"
-	"gopkg.in/yaml.v2"
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"log"
@@ -29,7 +30,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"compress/zlib"	
 )
 
 //======================================================文件操作
@@ -315,6 +315,14 @@ func Atou32(s string) uint32 {
 func Atou64(s string) uint64 {
 	n, _ := strconv.Atoi(s)
 	return uint64(n)
+}
+func Atof32(s string) float64{
+	float,_ := strconv.ParseFloat(s,32)
+	return float
+}
+func Atof64(s string) float64{
+	float,_ := strconv.ParseFloat(s,64)
+	return float
 }
 /*毫秒时间戳转日期*/
 func TimestampToDate(testid int64) string {
