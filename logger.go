@@ -222,6 +222,11 @@ func NewLogger(caseName string,opt... logOpt)(*ArdbegLog,error){
 	}
 	return l,nil
 }
+
+func (p*ArdbegLog)GetLogPath() string{
+	return p.logPath
+}
+
 func newLogger(level zapcore.Level, encoderConfig zapcore.EncoderConfig, wSync []zapcore.WriteSyncer, options ...zap.Option) *zap.Logger {
 	atomicLevel := zap.NewAtomicLevel()
 	atomicLevel.SetLevel(level)
