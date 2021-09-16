@@ -34,18 +34,12 @@ var levelMap = map[string]zapcore.Level{
 type ArdbegLogger struct{
 	baseGlobalToFile *zap.Logger
 	baseGlobalToConsole *zap.Logger
-	baseRobotToFile *zap.Logger
-	baseRobotToConsole *zap.Logger
 
 	seriousGlobalToFile *zap.Logger
 	seriousGlobalToConsole *zap.Logger
-	seriousRobotToFile *zap.Logger
-	seriousRobotToConsole *zap.Logger
 
 	traceGlobalToFile zerolog.Logger
 	traceGlobalToConsole zerolog.Logger
-	traceRobotToFile zerolog.Logger
-	traceRobotToConsole zerolog.Logger
 
 	logSwitch
 }
@@ -55,6 +49,7 @@ type ArdbegLog struct {
 	logger map[string]*ArdbegLogger
 	maxBackups int
 	maxSize int
+	caller int
 }
 
 type logSwitch struct{
@@ -181,7 +176,11 @@ func WithLogPath(path string) logOpt{
 		log.logPath = path
 	}
 }
-
+func WithCaller(n int) logOpt{
+	return func(log *ArdbegLog) {
+		log.caller = n
+	}
+}
 func NewLogger(caseName string,opt... logOpt)(*ArdbegLog,error){
 	l:=new(ArdbegLog)
 	l.maxSize = 512
@@ -206,8 +205,7 @@ func NewLogger(caseName string,opt... logOpt)(*ArdbegLog,error){
 	seriousSync := []zapcore.WriteSyncer{seriousLogFile}
 	consoleSync :=[]zapcore.WriteSyncer{os.Stdout}
 	/*zap 日志选项*/
-	globalOptions := getOptions(zap.AddCaller(), zap.AddCallerSkip(1)) //全局选项
-	robotOptions := getOptions(zap.AddCaller(), zap.AddCallerSkip(2)) //机器人选项
+	globalOptions := getOptions(zap.AddCaller(), zap.AddCallerSkip(l.caller)) //全局选项
 	/*zap 日志解析器*/
 	fileEncoder := getEncoderConfig(zapcore.CapitalLevelEncoder) //文件解析器
 	consoleEncoder := getEncoderConfig(zapcore.CapitalColorLevelEncoder) //终端解析器
@@ -215,16 +213,12 @@ func NewLogger(caseName string,opt... logOpt)(*ArdbegLog,error){
 	for k,_:=range l.logger{
 		l.logger[k].baseGlobalToFile=newLogger(levelMap[k], fileEncoder, baseSync, globalOptions...)
 		l.logger[k].baseGlobalToConsole=newLogger(levelMap[k], consoleEncoder, consoleSync, globalOptions...)
-		l.logger[k].baseRobotToFile=newLogger(levelMap[k], fileEncoder, baseSync, robotOptions...)
-		l.logger[k].baseRobotToConsole=newLogger(levelMap[k], consoleEncoder, consoleSync, robotOptions...)
+
 		l.logger[k].seriousGlobalToFile=newLogger(levelMap[k], fileEncoder, seriousSync, globalOptions...)
 		l.logger[k].seriousGlobalToConsole=newLogger(levelMap[k], consoleEncoder, consoleSync, globalOptions...)
-		l.logger[k].seriousRobotToFile=newLogger(levelMap[k], fileEncoder, seriousSync, robotOptions...)
-		l.logger[k].seriousRobotToConsole=newLogger(levelMap[k], consoleEncoder, consoleSync, robotOptions...)
-		l.logger[k].traceGlobalToFile=zerolog.New(traceLogFile).With().CallerWithSkipFrameCount(3).Logger().Level(zerolog.TraceLevel).Output(zerolog.ConsoleWriter{Out: traceLogFile, TimeFormat: "2006-01-02 15:04:05.000"})
-		l.logger[k].traceGlobalToConsole=zerolog.New(os.Stdout).With().CallerWithSkipFrameCount(3).Timestamp().Logger().Level(zerolog.TraceLevel).Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: "2006-01-02 15:04:05.000"})
-		l.logger[k].traceRobotToFile=zerolog.New(traceLogFile).With().CallerWithSkipFrameCount(4).Timestamp().Logger().Level(zerolog.TraceLevel).Output(zerolog.ConsoleWriter{Out: traceLogFile, TimeFormat: "2006-01-02 15:04:05.000"})
-		l.logger[k].traceRobotToConsole=zerolog.New(os.Stdout).With().CallerWithSkipFrameCount(4).Timestamp().Logger().Level(zerolog.TraceLevel).Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: "2006-01-02 15:04:05.000"})
+
+		l.logger[k].traceGlobalToFile=zerolog.New(traceLogFile).With().CallerWithSkipFrameCount(l.caller+2).Logger().Level(zerolog.TraceLevel).Output(zerolog.ConsoleWriter{Out: traceLogFile, TimeFormat: "2006-01-02 15:04:05.000"})
+		l.logger[k].traceGlobalToConsole=zerolog.New(os.Stdout).With().CallerWithSkipFrameCount(l.caller+2).Timestamp().Logger().Level(zerolog.TraceLevel).Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: "2006-01-02 15:04:05.000"})
 	}
 	return l,nil
 }
@@ -280,6 +274,7 @@ func (p*ArdbegLog)Trace(format string, v ...interface{}) {
 		p.logger["Trace"].traceGlobalToFile.Trace().Msg(fmt.Sprintf(format, v...))
 	}
 }
+
 func (p*ArdbegLog)Debug(format string, v ...interface{}) {
 	if p == nil {
 		return
@@ -348,90 +343,6 @@ func (p*ArdbegLog)Fatal(format string, v ...interface{}) {
 	}
 	if p.logger["Fatal"].toFile{
 		p.logger["Fatal"].seriousGlobalToFile.Fatal(fmt.Sprintf(format, v...))
-	}
-}
-func (p*ArdbegLog) RDebug(format string, v ...interface{}) {
-	if p == nil {
-		return
-	}
-	if _,ok:=p.logger["Debug"];!ok{
-		return
-	}
-	if p.logger["Debug"].toConsole{
-		p.logger["Debug"].baseRobotToConsole.Debug(fmt.Sprintf(format, v...))
-	}
-	if p.logger["Debug"].toFile{
-		p.logger["Debug"].baseRobotToFile.Debug(fmt.Sprintf(format, v...))
-	}
-}
-func (p*ArdbegLog)RInfo(format string, v ...interface{}) {
-	if p == nil {
-		return
-	}
-	if _,ok:=p.logger["Info"];!ok{
-		return
-	}
-	if p.logger["Info"].toConsole{
-		p.logger["Info"].baseRobotToConsole.Info(fmt.Sprintf(format, v...))
-	}
-	if p.logger["Info"].toFile{
-		p.logger["Info"].baseRobotToFile.Info(fmt.Sprintf(format, v...))
-	}
-}
-func (p*ArdbegLog)RError(format string, v ...interface{}) {
-	if p == nil {
-		return
-	}
-	if _,ok:=p.logger["Error"];!ok{
-		return
-	}
-	if p.logger["Error"].toConsole{
-		p.logger["Error"].seriousRobotToConsole.Error(fmt.Sprintf(format, v...))
-	}
-	if p.logger["Error"].toFile{
-		p.logger["Error"].seriousRobotToFile.Error(fmt.Sprintf(format, v...))
-	}
-}
-func (p*ArdbegLog)RWarn(format string, v ...interface{}) {
-	if p == nil {
-		return
-	}
-	if _,ok:=p.logger["Warn"];!ok{
-		return
-	}
-	if p.logger["Warn"].toConsole{
-		p.logger["Warn"].baseRobotToConsole.Warn(fmt.Sprintf(format, v...))
-	}
-	if p.logger["Warn"].toFile{
-		p.logger["Warn"].baseRobotToFile.Warn(fmt.Sprintf(format, v...))
-	}
-}
-func (p*ArdbegLog)RFatal(format string, v ...interface{}) {
-	if p == nil {
-		return
-	}
-	if _,ok:=p.logger["Fatal"];!ok{
-		return
-	}
-	if p.logger["Fatal"].toConsole{
-		p.logger["Fatal"].seriousRobotToConsole.Fatal(fmt.Sprintf(format, v...))
-	}
-	if p.logger["Fatal"].toFile{
-		p.logger["Fatal"].seriousRobotToFile.Fatal(fmt.Sprintf(format, v...))
-	}
-}
-func (p*ArdbegLog)RTrace(format string, v ...interface{}) {
-	if p == nil {
-		return
-	}
-	if _,ok:=p.logger["Trace"];!ok{
-		return
-	}
-	if p.logger["Trace"].toConsole{
-		p.logger["Trace"].traceRobotToConsole.Trace().Msg(fmt.Sprintf(format, v...))
-	}
-	if p.logger["Trace"].toFile{
-		p.logger["Trace"].traceRobotToFile.Trace().Msg(fmt.Sprintf(format, v...))
 	}
 }
 
