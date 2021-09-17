@@ -69,7 +69,7 @@ func WithDebugFile(b bool) logOpt{
 		if _,ok:=log.logger["Debug"];!ok{
 			log.logger["Debug"] = new(ArdbegLogger)
 		}
-		log.logger["Debug"].toFile = true
+		log.logger["Debug"].toFile = b
 	}
 }
 func WithDebugConsole(b bool) logOpt{
@@ -77,7 +77,7 @@ func WithDebugConsole(b bool) logOpt{
 		if _,ok:=log.logger["Debug"];!ok{
 			log.logger["Debug"] = new(ArdbegLogger)
 		}
-		log.logger["Debug"].toConsole = true
+		log.logger["Debug"].toConsole = b
 	}
 }
 func WithInfoFile(b bool) logOpt{
@@ -85,7 +85,7 @@ func WithInfoFile(b bool) logOpt{
 		if _,ok:=log.logger["Info"];!ok{
 			log.logger["Info"] = new(ArdbegLogger)
 		}
-		log.logger["Info"].toFile = true
+		log.logger["Info"].toFile = b
 	}
 }
 func WithInfoConsole(b bool) logOpt{
@@ -93,7 +93,7 @@ func WithInfoConsole(b bool) logOpt{
 		if _,ok:=log.logger["Info"];!ok{
 			log.logger["Info"] = new(ArdbegLogger)
 		}
-		log.logger["Info"].toConsole = true
+		log.logger["Info"].toConsole = b
 	}
 }
 func WithWarnFile(b bool) logOpt{
@@ -101,7 +101,7 @@ func WithWarnFile(b bool) logOpt{
 		if _,ok:=log.logger["Warn"];!ok{
 			log.logger["Warn"] = new(ArdbegLogger)
 		}
-		log.logger["Warn"].toFile = true
+		log.logger["Warn"].toFile = b
 	}
 }
 func WithWarnConsole(b bool) logOpt{
@@ -109,7 +109,7 @@ func WithWarnConsole(b bool) logOpt{
 		if _,ok:=log.logger["Warn"];!ok{
 			log.logger["Warn"] = new(ArdbegLogger)
 		}
-		log.logger["Warn"].toConsole = true
+		log.logger["Warn"].toConsole = b
 	}
 }
 func WithErrorFile(b bool) logOpt{
@@ -117,7 +117,7 @@ func WithErrorFile(b bool) logOpt{
 		if _,ok:=log.logger["Error"];!ok{
 			log.logger["Error"] = new(ArdbegLogger)
 		}
-		log.logger["Error"].toFile = true
+		log.logger["Error"].toFile = b
 	}
 }
 func WithErrorConsole(b bool) logOpt{
@@ -125,7 +125,7 @@ func WithErrorConsole(b bool) logOpt{
 		if _,ok:=log.logger["Error"];!ok{
 			log.logger["Error"] = new(ArdbegLogger)
 		}
-		log.logger["Error"].toConsole = true
+		log.logger["Error"].toConsole = b
 	}
 }
 func WithTraceFile(b bool) logOpt{
@@ -133,7 +133,7 @@ func WithTraceFile(b bool) logOpt{
 		if _,ok:=log.logger["Trace"];!ok{
 			log.logger["Trace"] = new(ArdbegLogger)
 		}
-		log.logger["Trace"].toFile = true
+		log.logger["Trace"].toFile = b
 	}
 }
 func WithTraceConsole(b bool) logOpt{
@@ -141,7 +141,7 @@ func WithTraceConsole(b bool) logOpt{
 		if _,ok:=log.logger["Trace"];!ok{
 			log.logger["Trace"] = new(ArdbegLogger)
 		}
-		log.logger["Trace"].toConsole = true
+		log.logger["Trace"].toConsole = b
 	}
 }
 func WithFatalFile(b bool) logOpt{
@@ -149,7 +149,7 @@ func WithFatalFile(b bool) logOpt{
 		if _,ok:=log.logger["Fatal"];!ok{
 			log.logger["Fatal"] = new(ArdbegLogger)
 		}
-		log.logger["Fatal"].toFile = true
+		log.logger["Fatal"].toFile = b
 	}
 }
 func WithFatalConsole(b bool) logOpt{
@@ -157,7 +157,7 @@ func WithFatalConsole(b bool) logOpt{
 		if _,ok:=log.logger["Fatal"];!ok{
 			log.logger["Fatal"] = new(ArdbegLogger)
 		}
-		log.logger["Fatal"].toConsole = true
+		log.logger["Fatal"].toConsole = b
 	}
 }
 
@@ -217,7 +217,7 @@ func NewLogger(caseName string,opt... logOpt)(*ArdbegLog,error){
 		l.logger[k].seriousGlobalToFile=newLogger(levelMap[k], fileEncoder, seriousSync, globalOptions...)
 		l.logger[k].seriousGlobalToConsole=newLogger(levelMap[k], consoleEncoder, consoleSync, globalOptions...)
 
-		l.logger[k].traceGlobalToFile=zerolog.New(traceLogFile).With().CallerWithSkipFrameCount(l.caller+2).Logger().Level(zerolog.TraceLevel).Output(zerolog.ConsoleWriter{Out: traceLogFile, TimeFormat: "2006-01-02 15:04:05.000"})
+		l.logger[k].traceGlobalToFile=zerolog.New(traceLogFile).With().CallerWithSkipFrameCount(l.caller+2).Timestamp().Logger().Level(zerolog.TraceLevel).Output(zerolog.ConsoleWriter{Out: traceLogFile, TimeFormat: "2006-01-02 15:04:05.000"})
 		l.logger[k].traceGlobalToConsole=zerolog.New(os.Stdout).With().CallerWithSkipFrameCount(l.caller+2).Timestamp().Logger().Level(zerolog.TraceLevel).Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: "2006-01-02 15:04:05.000"})
 	}
 	return l,nil
