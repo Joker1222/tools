@@ -384,7 +384,11 @@ func (p ProtoNil) Reset() {
 func (p ProtoNil) ProtoMessage() {
 
 }
-
+/*漂亮的json字符串*/
+func JsonStr(v interface{}) string{
+	buf,_:=json.MarshalIndent(v, "", "    ")
+	return string(buf)
+}
 //======================================================常用加密算法
 /*Aes加解密*/
 type _PaddingType int32
