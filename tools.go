@@ -658,12 +658,19 @@ func Zip(dst, src string,ignore map[string]struct{}) (err error) {
 			fmt.Printf("忽略压缩文件:%v\n",path)
 			return
 		}
+		//分割字符串，找出带斜杠的第一级目录
+		s:=strings.Split(path,"/")
+		if s!=nil{
+			if _,ok:=ignore[s[0]];ok{
+				fmt.Printf("忽略压缩文件:%v\n",path)
+				return
+			}
+		}
 		// 通过文件信息，创建 zip 的文件信息
 		fh, err := zip.FileInfoHeader(fi)
 		if err != nil {
 			return
 		}
-
 		// 替换文件信息中的文件名
 		fh.Name = strings.TrimPrefix(path, string(filepath.Separator))
 
@@ -701,6 +708,8 @@ func Zip(dst, src string,ignore map[string]struct{}) (err error) {
 		return nil
 	})
 }
+
+
 
 /*文件解压缩*/
 func UnZip(dst, src string) (err error) {
