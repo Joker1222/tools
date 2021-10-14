@@ -632,15 +632,14 @@ func GZipUnCompress(in []byte) ([]byte,error) {
 	return ioutil.ReadAll(reader)
 }
 
-/*目标压缩包名，源文件或目录*/
-func Zip(dst, src string) (err error) {
+/*目标压缩包名，源文件或目录，支持忽略部分文件*/
+func Zip(dst, src string,ignore map[string]struct{}) (err error) {
 	// 创建准备写入的文件
 	fw, err := os.Create(dst)
 	defer fw.Close()
 	if err != nil {
 		return err
 	}
-
 	// 通过 fw 来创建 zip.Write
 	zw := zip.NewWriter(fw)
 	defer func() {
@@ -655,7 +654,10 @@ func Zip(dst, src string) (err error) {
 		if errBack != nil {
 			return errBack
 		}
-
+		if _,ok:=ignore[path];ok{
+			fmt.Printf("忽略压缩文件:%v\n",path)
+			return
+		}
 		// 通过文件信息，创建 zip 的文件信息
 		fh, err := zip.FileInfoHeader(fi)
 		if err != nil {
@@ -696,10 +698,10 @@ func Zip(dst, src string) (err error) {
 		}
 		// 输出压缩的内容
 		fmt.Printf("成功压缩文件： %s, 共写入了 %d 个字符的数据\n", path, n)
-
 		return nil
 	})
 }
+
 /*文件解压缩*/
 func UnZip(dst, src string) (err error) {
 	// 打开压缩文件，这个 zip 包有个方便的 ReadCloser 类型
