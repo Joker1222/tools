@@ -36,15 +36,16 @@ import (
 )
 
 //======================================================文件操作
-func LoadYamlConfig(filepath string,YamlConfig interface{}) error{
-	f,err:=ioutil.ReadFile(filepath)
-	if err!=nil{
+func LoadYamlConfig(filepath string, YamlConfig interface{}) error {
+	f, err := ioutil.ReadFile(filepath)
+	if err != nil {
 		return err
 	}
-	return yaml.Unmarshal(f,YamlConfig)
+	return yaml.Unmarshal(f, YamlConfig)
 }
+
 /*load csv*/
-func LoadCsv(filepath string) [][]string{
+func LoadCsv(filepath string) [][]string {
 	cntb, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return nil
@@ -53,6 +54,7 @@ func LoadCsv(filepath string) [][]string{
 	ss, _ := r2.ReadAll()
 	return ss
 }
+
 /*
 @Desc:加载json配置
 @Param:文件路径，json结构体指针(地址)
@@ -73,6 +75,7 @@ func LoadJSONConfig(filename string, JSONConfig interface{}) error {
 	}
 	return nil
 }
+
 /*
 @Desc:加载XML配置
 @Param:文件路径，XML结构体指针(地址)
@@ -93,6 +96,7 @@ func LoadXMLConfig(filename string, XMLConfig interface{}) error {
 	}
 	return nil
 }
+
 /*根据缓存创建XML文件*/
 func CreateXMLFileFromCache(path string, v interface{}) error {
 	output, err := xml.MarshalIndent(v, "", "    ")
@@ -107,6 +111,7 @@ func CreateXMLFileFromCache(path string, v interface{}) error {
 	file.Write(output)
 	return nil
 }
+
 /*CSV一次读取所有行*/
 func CSV_ReadAllLineWithFD(fd *os.File) [][]string {
 	var Content [][]string
@@ -126,6 +131,7 @@ func CSV_ReadAllLineWithFD(fd *os.File) [][]string {
 	}
 	return Content
 }
+
 /*CSV一次写一行*/
 func CSV_WriteOneLineWithFD(strOneLine []string, fd *os.File) {
 	//这样可以追加写
@@ -142,6 +148,7 @@ func CSV_WriteOneLineWithFD(strOneLine []string, fd *os.File) {
 	//这里必须刷新，才能将数据写入文件。
 	w.Flush()
 }
+
 /*CSV一次写多行*/
 func CSV_WriteMuchLineWithFD(Content [][]string, fd *os.File) {
 	fd.Seek(0, io.SeekStart)
@@ -165,6 +172,7 @@ func PathExists(path string) (bool, error) {
 	}
 	return false, err
 }
+
 //======================================================随机数
 /*随机生成一个int64，不包括max!*/
 func RandInt64(min, max int64) int64 {
@@ -174,6 +182,7 @@ func RandInt64(min, max int64) int64 {
 	}
 	return rand.Int63n(max-min) + min
 }
+
 /*随机生成一个int，不包括Max*/
 func RandInt(min, max int) int {
 	rand.Seed(time.Now().UnixNano())
@@ -182,6 +191,7 @@ func RandInt(min, max int) int {
 	}
 	return rand.Intn(max-min) + min
 }
+
 /*一次生成多个不同的随机数用数组返回,不包括start!*/
 func GenerateRandomNumber(start int, end int, count int) []int {
 	//范围检查
@@ -209,6 +219,7 @@ func GenerateRandomNumber(start int, end int, count int) []int {
 	}
 	return nums
 }
+
 //======================================================类型转换
 /*网络字节序转换 byte <-> int */
 func BytesToInt64BigEndian(buf []byte) int64 {
@@ -283,6 +294,7 @@ func Uint32ToBytesBigEndian(n uint32) []byte {
 	binary.Write(bytesBuffer, binary.BigEndian, x)
 	return bytesBuffer.Bytes()
 }
+
 /*String <-> Bool */
 func StringToBool(s string) bool {
 	if s == "true" {
@@ -298,6 +310,7 @@ func BoolToString(b bool) string {
 		return "false"
 	}
 }
+
 /*easy atoi*/
 func Atoi(s string) int {
 	n, _ := strconv.Atoi(s)
@@ -319,18 +332,20 @@ func Atou64(s string) uint64 {
 	n, _ := strconv.Atoi(s)
 	return uint64(n)
 }
-func Atof32(s string) float64{
-	float,_ := strconv.ParseFloat(s,32)
+func Atof32(s string) float64 {
+	float, _ := strconv.ParseFloat(s, 32)
 	return float
 }
-func Atof64(s string) float64{
-	float,_ := strconv.ParseFloat(s,64)
+func Atof64(s string) float64 {
+	float, _ := strconv.ParseFloat(s, 64)
 	return float
 }
+
 /*毫秒时间戳转日期*/
 func TimestampToDate(testid int64) string {
 	return time.Unix(int64(testid/1000), 0).Format("2006-01-02 15:04:11")
 }
+
 //======================================================功能函数
 /*进度条*/
 func Bar(percentage int, w int) {
@@ -343,11 +358,13 @@ func Bar(percentage int, w int) {
 	}
 	fmt.Printf("%s", str1+str2+str3)
 }
+
 /*返回调用函数名称*/
 func CallFuncName(skip int) string {
 	pc, _, _, _ := runtime.Caller(skip)
 	return runtime.FuncForPC(pc).Name()
 }
+
 /*指针内存深拷贝*/
 func DeepCopy(dst, src interface{}) error {
 	var buf bytes.Buffer
@@ -356,6 +373,7 @@ func DeepCopy(dst, src interface{}) error {
 	}
 	return gob.NewDecoder(bytes.NewBuffer(buf.Bytes())).Decode(dst)
 }
+
 /*获取本地IP*/
 func GetLocalIP() string {
 	netInterfaces, err := net.Interfaces()
@@ -377,6 +395,7 @@ func GetLocalIP() string {
 	}
 	return ""
 }
+
 type ProtoNil struct{} //空的proto.Message
 func (p ProtoNil) String() string {
 	return ""
@@ -385,28 +404,35 @@ func (p ProtoNil) Reset() {}
 func (p ProtoNil) ProtoMessage() {
 
 }
+
 /*漂亮的json字符串*/
-func JsonStr(v interface{}) string{
-	buf,_:=json.MarshalIndent(v, "", "    ")
+func JsonStr(v interface{}) string {
+	buf, _ := json.MarshalIndent(v, "", "    ")
 	return string(buf)
 }
+
 //======================================================常用加密算法
 /*Aes加解密*/
 type _PaddingType int32
-const(
+
+const (
 	PaddingType_PKCS7 _PaddingType = 1
 	PaddingType_PKCS5 _PaddingType = 2
-	PaddingType_Zero _PaddingType = 3
+	PaddingType_Zero  _PaddingType = 3
 )
-func AesCBCEncrypt(key,iv,origData []byte,t _PaddingType) ([]byte, error) {
+
+func AesCBCEncrypt(key, iv, origData []byte, t _PaddingType) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	switch t{
-	case PaddingType_PKCS7: origData = PKCS7Padding(origData, block.BlockSize())
-	case PaddingType_PKCS5:origData = PKCS5Padding(origData, block.BlockSize())
-	case PaddingType_Zero:origData = ZeroPadding(origData, block.BlockSize())
+	switch t {
+	case PaddingType_PKCS7:
+		origData = PKCS7Padding(origData, block.BlockSize())
+	case PaddingType_PKCS5:
+		origData = PKCS5Padding(origData, block.BlockSize())
+	case PaddingType_Zero:
+		origData = ZeroPadding(origData, block.BlockSize())
 	}
 	blockMode := cipher.NewCBCEncrypter(block, iv) //iv=key
 	crypted := make([]byte, len(origData))
@@ -415,7 +441,7 @@ func AesCBCEncrypt(key,iv,origData []byte,t _PaddingType) ([]byte, error) {
 	blockMode.CryptBlocks(crypted, origData)
 	return crypted, nil
 }
-func AesCBCDecrypt(key,iv,crypted []byte,t _PaddingType) ([]byte, error) {
+func AesCBCDecrypt(key, iv, crypted []byte, t _PaddingType) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -424,10 +450,13 @@ func AesCBCDecrypt(key,iv,crypted []byte,t _PaddingType) ([]byte, error) {
 	origData := make([]byte, len(crypted))
 	// origData := crypted
 	blockMode.CryptBlocks(origData, crypted)
-	switch t{
-	case PaddingType_PKCS7: origData = PKCS7UnPadding(origData)
-	case PaddingType_PKCS5:origData = PKCS5UnPadding(origData)
-	case PaddingType_Zero:origData = ZeroUnPadding(origData)
+	switch t {
+	case PaddingType_PKCS7:
+		origData = PKCS7UnPadding(origData)
+	case PaddingType_PKCS5:
+		origData = PKCS5UnPadding(origData)
+	case PaddingType_Zero:
+		origData = ZeroUnPadding(origData)
 	}
 	return origData, nil
 }
@@ -441,6 +470,7 @@ func ZeroUnPadding(origData []byte) []byte {
 	unpadding := int(origData[length-1])
 	return origData[:(length - unpadding)]
 }
+
 //使用PKCS7进行填充，IOS也是7
 func PKCS7Padding(ciphertext []byte, blockSize int) []byte {
 	padding := blockSize - len(ciphertext)%blockSize
@@ -463,6 +493,7 @@ func PKCS5UnPadding(origData []byte) []byte {
 	unpadding := int(origData[length-1])
 	return origData[:(length - unpadding)]
 }
+
 /*Rsa加解密、公钥私钥生成*/
 /*公钥、私钥生成*/
 func GenRsaKey() (prvkey, pubkey []byte) {
@@ -489,6 +520,7 @@ func GenRsaKey() (prvkey, pubkey []byte) {
 	pubkey = pem.EncodeToMemory(block)
 	return
 }
+
 //签名
 func RsaSignWithSha256(data []byte, keyBytes []byte) []byte {
 	h := sha256.New()
@@ -511,6 +543,7 @@ func RsaSignWithSha256(data []byte, keyBytes []byte) []byte {
 	}
 	return signature
 }
+
 //验证
 func RsaVerySignWithSha256(data, signData, keyBytes []byte) bool {
 	block, _ := pem.Decode(keyBytes)
@@ -529,6 +562,7 @@ func RsaVerySignWithSha256(data, signData, keyBytes []byte) bool {
 	}
 	return true
 }
+
 // 公钥加密
 func RsaEncrypt(data, keyBytes []byte) []byte {
 	//解密pem格式的公钥
@@ -550,6 +584,7 @@ func RsaEncrypt(data, keyBytes []byte) []byte {
 	}
 	return ciphertext
 }
+
 // 私钥解密
 func RsaDecrypt(ciphertext, keyBytes []byte) []byte {
 	//获取私钥
@@ -571,23 +606,24 @@ func RsaDecrypt(ciphertext, keyBytes []byte) []byte {
 }
 
 /*rc4*/
-func Rc4Encrypt(key,input,output []byte) error{
+func Rc4Encrypt(key, input, output []byte) error {
 	c, err := rc4.NewCipher(key)
-	if err!=nil{
+	if err != nil {
 		return err
 	}
 	c.XORKeyStream(output, input)
 	return nil
 }
 
-func Rc4Decrypt(key,input,output []byte)error{
+func Rc4Decrypt(key, input, output []byte) error {
 	c, err := rc4.NewCipher(key) // 切记：这里不能重用cipher1，必须重新生成新的
-	if err!=nil{
+	if err != nil {
 		return err
 	}
 	c.XORKeyStream(output, input)
 	return nil
 }
+
 /*zlib*/
 func ZlibCompress(src []byte) []byte {
 	var in bytes.Buffer
@@ -606,23 +642,23 @@ func ZlibUnCompress(compressSrc []byte) []byte {
 }
 
 /*压缩 二进制*/
-func GZipCompress(in []byte) ([]byte,error) {
+func GZipCompress(in []byte) ([]byte, error) {
 	var b bytes.Buffer
 	gz := gzip.NewWriter(&b)
 	if _, err := gz.Write(in); err != nil {
-		return nil,err
+		return nil, err
 	}
 	if err := gz.Flush(); err != nil {
-		return nil,err
+		return nil, err
 	}
 	if err := gz.Close(); err != nil {
-		return nil,err
+		return nil, err
 	}
-	return b.Bytes(),nil
+	return b.Bytes(), nil
 }
 
 /*解压缩 二进制*/
-func GZipUnCompress(in []byte) ([]byte,error) {
+func GZipUnCompress(in []byte) ([]byte, error) {
 	reader, err := gzip.NewReader(bytes.NewReader(in))
 	if err != nil {
 		var out []byte
@@ -633,7 +669,7 @@ func GZipUnCompress(in []byte) ([]byte,error) {
 }
 
 /*目标压缩包名，源文件或目录，支持忽略部分文件*/
-func Zip(dst, src string,ignore map[string]struct{}) (err error) {
+func Zip(dst, src string, ignore map[string]struct{}) (err error) {
 	// 创建准备写入的文件
 	fw, err := os.Create(dst)
 	defer fw.Close()
@@ -654,15 +690,15 @@ func Zip(dst, src string,ignore map[string]struct{}) (err error) {
 		if errBack != nil {
 			return errBack
 		}
-		if _,ok:=ignore[path];ok{
-			fmt.Printf("忽略压缩文件:%v\n",path)
+		if _, ok := ignore[path]; ok {
+			fmt.Printf("忽略压缩文件:%v\n", path)
 			return
 		}
 		//分割字符串，找出带斜杠的第一级目录
-		s:=strings.Split(path,"/")
-		if s!=nil{
-			if _,ok:=ignore[s[0]];ok{
-				fmt.Printf("忽略压缩文件:%v\n",path)
+		s := strings.Split(path, "/")
+		if s != nil {
+			if _, ok := ignore[s[0]]; ok {
+				fmt.Printf("忽略压缩文件:%v\n", path)
 				return
 			}
 		}
@@ -708,8 +744,6 @@ func Zip(dst, src string,ignore map[string]struct{}) (err error) {
 		return nil
 	})
 }
-
-
 
 /*文件解压缩*/
 func UnZip(dst, src string) (err error) {
@@ -768,4 +802,83 @@ func UnZip(dst, src string) (err error) {
 		fr.Close()
 	}
 	return nil
+}
+
+func AesEncryptCFB8(origData []byte, iv, key []byte) (encrypted []byte) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		panic(err)
+	}
+	encrypted = make([]byte, aes.BlockSize+len(origData))
+	stream := newCFB8Encrypter(block, iv)
+	stream.XORKeyStream(encrypted, origData)
+	return encrypted
+}
+
+func AesDecryptCFB8(origData []byte, iv, key []byte) (encrypted []byte) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		panic(err)
+	}
+	encrypted = make([]byte, aes.BlockSize+len(origData))
+	stream := newCFB8Decrypter(block, iv)
+	stream.XORKeyStream(encrypted[aes.BlockSize:], origData)
+	return encrypted
+}
+
+// CFB stream with 8 bit segment size
+// See http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf
+type cfb8 struct {
+	b         cipher.Block
+	blockSize int
+	in        []byte
+	out       []byte
+
+	decrypt bool
+}
+
+func (x *cfb8) XORKeyStream(dst, src []byte) {
+	for i := range src {
+		x.b.Encrypt(x.out, x.in)
+		copy(x.in[:x.blockSize-1], x.in[1:])
+		if x.decrypt {
+			x.in[x.blockSize-1] = src[i]
+		}
+		dst[i] = src[i] ^ x.out[0]
+		if !x.decrypt {
+			x.in[x.blockSize-1] = dst[i]
+		}
+	}
+}
+
+// NewCFB8Encrypter returns a Stream which encrypts with cipher feedback mode
+// (segment size = 8), using the given Block. The iv must be the same length as
+// the Block's block size.
+func newCFB8Encrypter(block cipher.Block, iv []byte) cipher.Stream {
+	return newCFB8(block, iv, false)
+}
+
+// NewCFB8Decrypter returns a Stream which decrypts with cipher feedback mode
+// (segment size = 8), using the given Block. The iv must be the same length as
+// the Block's block size.
+func newCFB8Decrypter(block cipher.Block, iv []byte) cipher.Stream {
+	return newCFB8(block, iv, true)
+}
+
+func newCFB8(block cipher.Block, iv []byte, decrypt bool) cipher.Stream {
+	blockSize := block.BlockSize()
+	if len(iv) != blockSize {
+		// stack trace will indicate whether it was de or encryption
+		panic("cipher.newCFB: IV length must equal block size")
+	}
+	x := &cfb8{
+		b:         block,
+		blockSize: blockSize,
+		out:       make([]byte, blockSize),
+		in:        make([]byte, blockSize),
+		decrypt:   decrypt,
+	}
+	copy(x.in, iv)
+
+	return x
 }
