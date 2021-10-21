@@ -809,7 +809,7 @@ func AesEncryptCFB8(origData []byte, iv, key []byte) (encrypted []byte) {
 	if err != nil {
 		panic(err)
 	}
-	encrypted = make([]byte, aes.BlockSize+len(origData))
+	encrypted = make([]byte, len(origData))
 	stream := newCFB8Encrypter(block, iv)
 	stream.XORKeyStream(encrypted, origData)
 	return encrypted
@@ -820,9 +820,9 @@ func AesDecryptCFB8(origData []byte, iv, key []byte) (encrypted []byte) {
 	if err != nil {
 		panic(err)
 	}
-	encrypted = make([]byte, aes.BlockSize+len(origData))
+	encrypted = make([]byte, len(origData))
 	stream := newCFB8Decrypter(block, iv)
-	stream.XORKeyStream(encrypted[aes.BlockSize:], origData)
+	stream.XORKeyStream(encrypted, origData)
 	return encrypted
 }
 
