@@ -332,7 +332,7 @@ func Atou64(s string) uint64 {
 	n, _ := strconv.Atoi(s)
 	return uint64(n)
 }
-func Atof32(s string) float64 {
+func Atof32(s string) float32 {
 	float, _ := strconv.ParseFloat(s, 32)
 	return float
 }
