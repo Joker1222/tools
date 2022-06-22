@@ -334,11 +334,11 @@ func Atou64(s string) uint64 {
 }
 func Atof32(s string) float32 {
 	float, _ := strconv.ParseFloat(s, 32)
-	return float
+	return float32(float)
 }
 func Atof64(s string) float64 {
 	float, _ := strconv.ParseFloat(s, 64)
-	return float
+	return float64(float)
 }
 
 /*毫秒时间戳转日期*/
