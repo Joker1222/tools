@@ -50,6 +50,7 @@ type ArdbegLog struct {
 	maxBackups int
 	maxSize int
 	caller int
+	caseName string
 }
 
 type logSwitch struct{
@@ -186,6 +187,7 @@ func NewLogger(caseName string,opt... logOpt)(*ArdbegLog,error){
 	l.maxSize = 512
 	l.maxBackups = 10
 	l.logger = make(map[string]*ArdbegLogger)
+	l.caseName = caseName
 	for _,o:=range opt{
 		o(l)
 	}
@@ -273,10 +275,10 @@ func (p*ArdbegLog)Trace(format string, v ...interface{}) {
 		return
 	}
 	if p.logger["Trace"].toConsole{
-		p.logger["Trace"].traceGlobalToConsole.Trace().Msg(fmt.Sprintf(format, v...))
+		p.logger["Trace"].traceGlobalToConsole.Trace().Msg(fmt.Sprintf("["+p.caseName+"] "+format, v...))
 	}
 	if p.logger["Trace"].toFile{
-		p.logger["Trace"].traceGlobalToFile.Trace().Msg(fmt.Sprintf(format, v...))
+		p.logger["Trace"].traceGlobalToFile.Trace().Msg(fmt.Sprintf("["+p.caseName+"] "+format, v...))
 	}
 }
 
@@ -288,10 +290,10 @@ func (p*ArdbegLog)Debug(format string, v ...interface{}) {
 		return
 	}
 	if p.logger["Debug"].toConsole{
-		p.logger["Debug"].baseGlobalToConsole.Debug(fmt.Sprintf(format, v...))
+		p.logger["Debug"].baseGlobalToConsole.Debug(fmt.Sprintf("["+p.caseName+"] "+format, v...))
 	}
 	if p.logger["Debug"].toFile{
-		p.logger["Debug"].baseGlobalToFile.Debug(fmt.Sprintf(format, v...))
+		p.logger["Debug"].baseGlobalToFile.Debug(fmt.Sprintf("["+p.caseName+"] "+format, v...))
 	}
 }
 func (p*ArdbegLog)Info(format string, v ...interface{}) {
@@ -302,10 +304,10 @@ func (p*ArdbegLog)Info(format string, v ...interface{}) {
 		return
 	}
 	if p.logger["Info"].toConsole{
-		p.logger["Info"].baseGlobalToConsole.Info(fmt.Sprintf(format, v...))
+		p.logger["Info"].baseGlobalToConsole.Info(fmt.Sprintf("["+p.caseName+"] "+format, v...))
 	}
 	if p.logger["Info"].toFile{
-		p.logger["Info"].baseGlobalToFile.Info(fmt.Sprintf(format, v...))
+		p.logger["Info"].baseGlobalToFile.Info(fmt.Sprintf("["+p.caseName+"] "+format, v...))
 	}
 }
 func (p*ArdbegLog)Error(format string, v ...interface{}) {
@@ -316,10 +318,10 @@ func (p*ArdbegLog)Error(format string, v ...interface{}) {
 		return
 	}
 	if p.logger["Error"].toConsole{
-		p.logger["Error"].seriousGlobalToConsole.Error(fmt.Sprintf(format, v...))
+		p.logger["Error"].seriousGlobalToConsole.Error("["+p.caseName+"] "+fmt.Sprintf(format, v...))
 	}
 	if p.logger["Error"].toFile{
-		p.logger["Error"].seriousGlobalToFile.Error(fmt.Sprintf(format, v...))
+		p.logger["Error"].seriousGlobalToFile.Error("["+p.caseName+"] "+fmt.Sprintf(format, v...))
 	}
 }
 func (p*ArdbegLog)Warn(format string, v ...interface{}) {
@@ -330,10 +332,10 @@ func (p*ArdbegLog)Warn(format string, v ...interface{}) {
 		return
 	}
 	if p.logger["Warn"].toConsole{
-		p.logger["Warn"].baseGlobalToConsole.Warn(fmt.Sprintf(format, v...))
+		p.logger["Warn"].baseGlobalToConsole.Warn("["+p.caseName+"] "+fmt.Sprintf(format, v...))
 	}
 	if p.logger["Warn"].toFile{
-		p.logger["Warn"].baseGlobalToFile.Warn(fmt.Sprintf(format, v...))
+		p.logger["Warn"].baseGlobalToFile.Warn("["+p.caseName+"] "+fmt.Sprintf(format, v...))
 	}
 }
 func (p*ArdbegLog)Fatal(format string, v ...interface{}) {
@@ -344,10 +346,10 @@ func (p*ArdbegLog)Fatal(format string, v ...interface{}) {
 		return
 	}
 	if p.logger["Fatal"].toConsole{
-		p.logger["Fatal"].seriousGlobalToConsole.Fatal(fmt.Sprintf(format, v...))
+		p.logger["Fatal"].seriousGlobalToConsole.Fatal("["+p.caseName+"] "+fmt.Sprintf(format, v...))
 	}
 	if p.logger["Fatal"].toFile{
-		p.logger["Fatal"].seriousGlobalToFile.Fatal(fmt.Sprintf(format, v...))
+		p.logger["Fatal"].seriousGlobalToFile.Fatal("["+p.caseName+"] "+fmt.Sprintf(format, v...))
 	}
 }
 
@@ -355,7 +357,7 @@ func (p*ArdbegLog)Fatal(format string, v ...interface{}) {
 func (p*ArdbegLog) Stack() {
 	var buf [4096]byte
 	n := runtime.Stack(buf[:], false)
-	p.Error("\x1b[31m%s\x1b[0m", fmt.Sprintf("==> %s\n", string(buf[:n])))
+	p.Error("\x1b[31m%s\x1b[0m", fmt.Sprintf("["+p.caseName+"] "+"==> %s\n", string(buf[:n])))
 }
 
 func ColorRed(format string, v ...interface{}) string {
