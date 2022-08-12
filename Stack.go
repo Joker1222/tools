@@ -11,7 +11,7 @@ type (
 	}
 )
 // Create a new stack
-func New() *Stack {
+func NewStack() *Stack {
 	return &Stack{nil,0}
 }
 // Return the number of items in the stack
