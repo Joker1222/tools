@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
@@ -881,4 +882,173 @@ func newCFB8(block cipher.Block, iv []byte, decrypt bool) cipher.Stream {
 	copy(x.in, iv)
 
 	return x
+}
+
+// src=D:\\XXX\\XXX dst=xxx.tgz
+func TarGz(src, dst string, ignoreDir []interface{}, ignoreFile []interface{}) (err error) {
+	// 创建文件
+	fw, err := os.Create(dst)
+	if err != nil {
+		return
+	}
+	defer fw.Close()
+
+	// 将 tar 包使用 gzip 压缩，其实添加压缩功能很简单，
+	// 只需要在 fw 和 tw 之前加上一层压缩就行了，和 Linux 的管道的感觉类似
+	gw := gzip.NewWriter(fw)
+	defer gw.Close()
+
+	// 创建 Tar.Writer 结构
+	tw := tar.NewWriter(gw)
+	// 如果需要启用 gzip 将上面代码注释，换成下面的
+
+	defer tw.Close()
+
+	// 下面就该开始处理数据了，这里的思路就是递归处理目录及目录下的所有文件和目录
+	// 这里可以自己写个递归来处理，不过 Golang 提供了 filepath.Walk 函数，可以很方便的做这个事情
+	// 直接将这个函数的处理结果返回就行，需要传给它一个源文件或目录，它就可以自己去处理
+	// 我们就只需要去实现我们自己的 打包逻辑即可，不需要再去路径相关的事情
+	return filepath.Walk(src, func(fileName string, fi os.FileInfo, err error) error {
+		// 因为这个闭包会返回个 error ，所以先要处理一下这个
+		if err != nil {
+			return err
+		}
+		for _, v := range ignoreDir {
+			if runtime.GOOS == "windows" {
+				if strings.Index(fileName, "\\"+v.(string)) != -1 {
+					fmt.Println("忽略:", fileName)
+					return nil
+				}
+			} else {
+				if strings.Index(fileName, "/"+v.(string)) != -1 {
+					fmt.Println("忽略:", fileName)
+					return nil
+				}
+			}
+		}
+		for _, v := range ignoreFile {
+			if v == "" {
+				continue
+			}
+			if strings.Index(fileName, "."+v.(string)) != -1 {
+				fmt.Println("忽略:", fileName)
+				return nil
+			}
+		}
+		// 这里就不需要我们自己再 os.Stat 了，它已经做好了，我们直接使用 fi 即可
+		hdr, err := tar.FileInfoHeader(fi, "")
+		if err != nil {
+			return err
+		}
+		// 这里需要处理下 hdr 中的 Name，因为默认文件的名字是不带路径的，
+		// 打包之后所有文件就会堆在一起，这样就破坏了原本的目录结果
+		// 例如： 将原本 hdr.Name 的 syslog 替换程 log/syslog
+		// 这个其实也很简单，回调函数的 fileName 字段给我们返回来的就是完整路径的 log/syslog
+		// strings.TrimPrefix 将 fileName 的最左侧的 / 去掉，
+		// 熟悉 Linux 的都知道为什么要去掉这个
+		hdr.Name = fileName
+		hdr.Name = strings.Replace(hdr.Name, src, "", -1)
+		hdr.Name = "." + hdr.Name
+		hdr.Name = strings.Replace(hdr.Name, "\\", "/", -1)
+		// 写入文件信息
+		if err := tw.WriteHeader(hdr); err != nil {
+			return err
+		}
+
+		// 判断下文件是否是标准文件，如果不是就不处理了，
+		// 如： 目录，这里就只记录了文件信息，不会执行下面的 copy
+		if !fi.Mode().IsRegular() {
+			return nil
+		}
+
+		// 打开文件
+		fr, err := os.Open(fileName)
+		defer fr.Close()
+		if err != nil {
+			return err
+		}
+
+		// copy 文件数据到 tw
+		n, err := io.Copy(tw, fr)
+		if err != nil {
+			return err
+		}
+
+		// 记录下过程，这个可以不记录，这个看需要，这样可以看到打包的过程
+		fmt.Printf("成功打包 %s ，共写入了 %d 字节的数据\n", hdr.Name, n)
+
+		return nil
+	})
+}
+
+func UnPack(targetDir, targetFile string) error {
+	// 打开tar文件
+	fr, err := os.Open(targetFile)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err2 := fr.Close(); err2 != nil && err == nil {
+			err = err2
+		}
+	}()
+	// 使用gzip解压
+	gr, err := gzip.NewReader(fr)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err2 := gr.Close(); err2 != nil && err == nil {
+			err = err2
+		}
+	}()
+	// 创建tar reader
+	tarReader := tar.NewReader(gr)
+	// 循环读取
+	for {
+		header, err := tarReader.Next()
+		switch {
+		// 读取结束
+		case err == io.EOF:
+			return nil
+		case err != nil:
+			return err
+		case header == nil:
+			continue
+		}
+		// 因为指定了解压的目录，所以文件名加上路径
+		targetFullPath := filepath.Join(targetDir, header.Name)
+		// 根据文件类型做处理，这里只处理目录和普通文件，如果需要处理其他类型文件，添加case即可
+		switch header.Typeflag {
+		case tar.TypeDir:
+			// 是目录，不存在则创建
+			if exists := DirExists(targetFullPath); !exists {
+				if err = os.MkdirAll(targetFullPath, 0755); err != nil {
+					return err
+				}
+			}
+		case tar.TypeReg:
+			// 是普通文件，创建并将内容写入
+			file, err := os.OpenFile(targetFullPath, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(file, tarReader)
+			// 循环内不能用defer，先关闭文件句柄
+			if err2 := file.Close(); err2 != nil {
+				return err2
+			}
+			// 这里再对文件copy的结果做判断
+			if err != nil {
+				return err
+			}
+			fmt.Println(targetFullPath)
+		}
+	}
+}
+
+// 判断目录是否存在，在解压的逻辑会
+func DirExists(dir string) bool {
+	info, err := os.Stat(dir)
+	return (err == nil || os.IsExist(err)) && info.IsDir()
 }
